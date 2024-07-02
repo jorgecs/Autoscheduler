@@ -1,17 +1,8 @@
-<p align="center">
-   <picture>
-     <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Qcraft-UEx/Qcraft/blob/main/docs/_images/qcraft_logo.png?raw=true" width="60%">
-     <img src="https://github.com/Qcraft-UEx/Qcraft/blob/main/docs/_images/qcraft_logo.png?raw=true" width="60%" alt="Qcraft Logo">
-   </picture>
-  </a>
-</p>
-
-
-# QCRAFT AutoSchedulQ
+# Autoscheduler
 
 ## Description
 
-QCRAFT AutoSchedulQ: a library that allows users to automatically schedule the execution of their own quantum circuits, improving efficiency and reducing execution times in quantum computing environments. With this library, your Qiskit or Braket quantum circuit will be modified to increase its length but also decreasing the number of shots needed to execute it, getting a new circuit that needs more qubits but less shots to get the same result as the original circuit.
+Autoscheduler: a library that allows users to automatically schedule the execution of their own quantum circuits, improving efficiency and reducing execution times in quantum computing environments. With this library, your Qiskit or Braket quantum circuit will be modified to increase its length but also decreasing the number of shots needed to execute it, getting a new circuit that needs more qubits but less shots to get the same result as the original circuit.
 
 ## Installation
 
