@@ -144,6 +144,9 @@ results = autoscheduler.schedule_and_execute(circuit, max_qubits, shots, 'ibm_br
 
 ```
 
+## Changelog
+The changelog is available [here](https://github.com/jorgecs/Autoscheduler/blob/main/CHANGELOG.md)
+
 ## License
 Autoscheduler is licensed under the [MIT License](LICENSE)
 
