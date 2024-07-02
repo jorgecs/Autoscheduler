@@ -15,7 +15,7 @@ pip install autoscheduler
 You can also install from source by cloning the repository and installing from source:
 
 ```bash
-git clone https://github.com/Qcraft-UEx/QCRAFT-AutoSchedulQ.git
+git clone https://github.com/jorgecs/Autoscheduler.git
 cd autoscheduler
 pip install .
 ```
