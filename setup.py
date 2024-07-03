@@ -23,6 +23,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.9',
     ],
+    license='MIT',
     install_requires=[
         'requests>=2.32.0,<3.0.0',
         'qiskit>=1.1.0,<2.0.0',
