@@ -13,10 +13,11 @@ sys.path.insert(0, os.path.abspath('../autoscheduler'))
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon'
 ]
 
 project = 'QCRAFT AutoSchedulQ'
-copyright = '2024, Jorge Casco Seco'
+copyright = '2024, SPILab'
 author = 'Jorge Casco Seco'
 release = autoscheduler.__version__
 
@@ -33,3 +34,5 @@ exclude_patterns = []
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
+
+autodoc_member_order = 'bysource'
