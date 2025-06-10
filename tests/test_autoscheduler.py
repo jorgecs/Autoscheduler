@@ -1,6 +1,6 @@
 import unittest
 import qiskit
-from qiskit.qasm2 import dumps
+from qiskit.qasm3 import dumps
 import braket.circuits
 import pytest
 from unittest.mock import Mock, patch
@@ -138,6 +138,7 @@ class TestAutoScheduler(unittest.TestCase):
             circuit.barrier(qreg_q) #circuit.barrier(qreg_q)
             #circuit.rx(np.pi / 4 , qreg_q[ 0 ]) #creg_c
             circuit.x(qreg_q[1]).c_if(creg_c, 1) # qreg_q[1]
+            circuit.y(qreg_q[2]).c_if(creg_c[2], 1) # qreg_q[2]
             circuit.measure(qreg_q[0],creg_c[0])   #qreg_c[1
             circuit.measure(qreg_q[1], creg_c[1])  #121]
             circuit.measure(qreg_q[2], creg_c[2])  # sa1
@@ -210,6 +211,57 @@ class TestAutoScheduler(unittest.TestCase):
             print(execute_quantum_task())
             sys.stdout.flush()
             """,
+            "ibm_text_if_test":
+            """
+            from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+            from qiskit import execute, Aer
+            from qiskit import transpile
+            from qiskit_ibm_provider import least_busy, IBMProvider
+            import numpy as np
+
+            qreg_q = QuantumRegister(6,'q')
+            creg_c = ClassicalRegister(6,'c')
+            circuit = QuantumCircuit(qreg_q, creg_c)
+            gate_machines_arn= {"local":"local", "ibm_brisbane":"ibm_brisbane", "ibm_osaka":"ibm_osaka", "ibm_kyoto":"ibm_kyoto", "simulator_stabilizer":"simulator_stabilizer", "simulator_mps":"simulator_mps", "simulator_extended_stabilizer":"simulator_extended_stabilizer", "simulator_statevector":"simulator_statevector"}
+
+            circuit.h(qreg_q[0])              
+            circuit.h(qreg_q[1])   
+            circuit.h(qreg_q[2]) 
+            circuit.barrier(qreg_q[  0 ],qreg_q[ 1  ], qreg_q[2], qreg_q[3], qreg_q[4], qreg_q[5])
+            circuit.cx(qreg_q[0],qreg_q[3]) 
+            circuit.cx(qreg_q[  1  ], qreg_q[4])      # np.pi    
+            circuit.cx(qreg_q[2  ], qreg_q[  5])
+            circuit.barrier() #circuit.barrier(qreg_q)
+            circuit.cx(qreg_q[1], qreg_q[ 4])  #changing creg_c[3]   
+            circuit.cx(qreg_q[1], qreg_q[5 ])  
+            circuit.barrier(qreg_q[0],qreg_q[1],qreg_q[2], qreg_q[3],qreg_q[4], qreg_q[5]) # editing qreg_q 
+            circuit.h(qreg_q[0]) #qreg_q[1]
+            circuit.h(qreg_q[1]) # changing the qreg_q[1] creg_c[2] 
+            circuit.h(qreg_q[2]) # 
+            circuit.rx(np.pi / 4 , qreg_q[ 0 ]) #creg_c
+            circuit.barrier(qreg_q) #circuit.barrier(qreg_q)
+            #circuit.rx(np.pi / 4 , qreg_q[ 0 ]) #creg_c
+            with circuit.if_test((creg_c[1],1)):
+                circuit.x(qreg_q[1]) # qreg_q[1]
+                circuit.y(qreg_q[2]) # qreg_q[2]
+            with circuit.if_test((creg_c,1)):
+                circuit.z(qreg_q[1]) # qreg_q[1]               
+            circuit.measure(qreg_q[0],creg_c[0])   #qreg_c[1
+            circuit.measure(qreg_q[1], creg_c[1])  #121]
+            circuit.measure(qreg_q[2], creg_c[2])  # sa1
+            circuit.measure(qreg_q[3], creg_c[3]) # circuit.h(qreg_q[2])
+            circuit.measure(qreg_q[4], creg_c[4])
+            circuit.measure(qreg_q[5], creg_c[5])
+
+            shots = 10000
+            provider = IBMProvider()
+            backend = Aer.get_backend('qasm_simulator')
+
+            qc_basis = transpile(circuit, backend)
+            job = execute(qc_basis, backend=backend, shots=shots)
+            job_result = job.result()
+            print(job_result.get_counts(qc_basis))
+            """,
         }
         self.scheduler = Autoscheduler()
 
@@ -267,6 +319,58 @@ class TestAutoScheduler(unittest.TestCase):
         built_circuit_statevector = qiskit.quantum_info.Statevector.from_instruction(built_circuit)
         circuit_statevector = qiskit.quantum_info.Statevector.from_instruction(circuit)
         self.assertEqual(built_circuit_statevector, circuit_statevector) # As MCX add a label to the gate in qasm and its random, its a better approach to test this with statevectors
+
+    @patch('autoscheduler.Autoscheduler._fetch_circuit')
+    def test_code_to_circuit_ibm_with_if_test(self, mock_fetch_circuit):
+        mock_response = Mock()
+        mock_response.text = self.common_values["ibm_text_if_test"]
+        mock_fetch_circuit.return_value = mock_response
+
+        url = "https://raw.githubusercontent.com/example/circuits/main/circuit.py"
+        shots = 5000
+        max_qubits = 29
+        scheduled_circuit, shots, times = self.scheduler.schedule(url, shots, max_qubits=max_qubits, provider='ibm')
+        
+        qreg_q = qiskit.QuantumRegister(24, 'qreg_q')
+        creg_c = qiskit.ClassicalRegister(24, 'creg_c')
+        circuit = qiskit.QuantumCircuit(qreg_q, creg_c)
+        for i in range(4):
+            circuit.h(qreg_q[0+6*i])
+            circuit.h(qreg_q[1+6*i])
+            circuit.h(qreg_q[2+6*i])
+            circuit.barrier(qreg_q[0+6*i], qreg_q[1+6*i], qreg_q[2+6*i], qreg_q[3+6*i], qreg_q[4+6*i], qreg_q[5+6*i])
+            circuit.cx(qreg_q[0+6*i], qreg_q[3+6*i])
+            circuit.cx(qreg_q[1+6*i], qreg_q[4+6*i])
+            circuit.cx(qreg_q[2+6*i], qreg_q[5+6*i])
+            circuit.barrier()
+            circuit.cx(qreg_q[1+6*i], qreg_q[4+6*i])
+            circuit.cx(qreg_q[1+6*i], qreg_q[5+6*i])
+            circuit.barrier(qreg_q[0+6*i], qreg_q[1+6*i], qreg_q[2+6*i], qreg_q[3+6*i], qreg_q[4+6*i], qreg_q[5+6*i])
+            circuit.h(qreg_q[0+6*i])
+            circuit.h(qreg_q[1+6*i])
+            circuit.h(qreg_q[2+6*i])
+            circuit.rx(np.pi / 4 , qreg_q[ 0+6*i])
+            circuit.barrier(qreg_q)
+            if self.scheduler._get_qiskit_version() < 2:
+                circuit.x(qreg_q[1+6*i]).c_if(creg_c[1+6*i], 1)
+                circuit.y(qreg_q[2+6*i]).c_if(creg_c[1+6*i], 1)
+                circuit.z(qreg_q[1+6*i]).c_if(creg_c, 1)
+            else:
+                with circuit.if_test((creg_c[1+6*i],1)):
+                    circuit.x(qreg_q[1+6*i])
+                    circuit.y(qreg_q[2+6*i])
+                with circuit.if_test((creg_c,1)):
+                    circuit.z(qreg_q[1+6*i])
+            circuit.measure(qreg_q[0+6*i], creg_c[0+6*i])
+            circuit.measure(qreg_q[1+6*i], creg_c[1+6*i])
+            circuit.measure(qreg_q[2+6*i], creg_c[2+6*i])
+            circuit.measure(qreg_q[3+6*i], creg_c[3+6*i])
+            circuit.measure(qreg_q[4+6*i], creg_c[4+6*i])
+            circuit.measure(qreg_q[5+6*i], creg_c[5+6*i])
+
+        self.assertEqual(dumps(scheduled_circuit), dumps(circuit))
+        self.assertEqual(shots, 1250)
+        self.assertEqual(times, 4)
 
     def test_code_to_circuit_aws(self):
         code_str = """circuit.x(0)\ncircuit.x(0+  1)\ncircuit.x(     2)\ncircuit.x(3)\ncircuit.cnot(2,1)\ncircuit.cnot(1,2)\ncircuit.cnot(   1+1   ,1)\ncircuit.cnot(1,0)\ncircuit.cnot(0,     1    )\ncircuit.cnot(1,0)\ncircuit.cnot(3,0)\ncircuit.cnot(0,3)\ncircuit.ccnot(3,0,1)\ncircuit.rx(1,0)\ncircuit.cswap(0, 1, 2)\ncircuit.phaseshift(0,0.15)\ncircuit.cphaseshift01( 0, 1,     0.15)\ncircuit.s(2)\ncircuit.gpi2(0, 0.15)\ncircuit.yy(0, 1, 0.15)\ncircuit.ms(0, 1, 0.15, 0.15, 0.15)
@@ -415,13 +519,24 @@ class TestAutoScheduler(unittest.TestCase):
             circuit.h(qreg_q[2+6*i])
             circuit.rx(np.pi / 4 , qreg_q[ 0+6*i])
             circuit.barrier(qreg_q)
-            circuit.x(qreg_q[1+6*i]).c_if(creg_c, 1)
+            if self.scheduler._get_qiskit_version() < 2:
+                circuit.x(qreg_q[1+6*i]).c_if(creg_c, 1)
+                circuit.y(qreg_q[2+6*i]).c_if(creg_c[2+6*i], 1)
+            else:
+                with circuit.if_test((creg_c, 1)):
+                    circuit.x(qreg_q[1+6*i])
+                with circuit.if_test((creg_c[2+6*i], 1)):
+                    circuit.y(qreg_q[2+6*i])
             circuit.measure(qreg_q[0+6*i], creg_c[0+6*i])
             circuit.measure(qreg_q[1+6*i], creg_c[1+6*i])
             circuit.measure(qreg_q[2+6*i], creg_c[2+6*i])
             circuit.measure(qreg_q[3+6*i], creg_c[3+6*i])
             circuit.measure(qreg_q[4+6*i], creg_c[4+6*i])
             circuit.measure(qreg_q[5+6*i], creg_c[5+6*i])
+
+        print(dumps(scheduled_circuit))
+        print('--------------')
+        print(dumps(circuit))
 
         self.assertEqual(dumps(scheduled_circuit), dumps(circuit))
         self.assertEqual(shots, 1250)

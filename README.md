@@ -8,7 +8,7 @@ Autoscheduler: a library that allows users to automatically schedule the executi
 
 ## Installation
 
-You can install QCRAFT AutoSchedulQ and all its dependencies using pip:
+You can install AutoScheduler and all its dependencies using pip:
 
 ```bash
 pip install autoscheduler
@@ -17,7 +17,7 @@ pip install autoscheduler
 You can also install from source by cloning the repository and installing from source:
 
 ```bash
-git clone https://github.com/Qcraft-UEx/QCRAFT-AutoSchedulQ.git
+git clone https://github.com/jorgecs/AutoScheduler.git
 cd autoscheduler
 pip install .
 ```
@@ -177,7 +177,7 @@ autoscheduler = Autoscheduler()
 results = autoscheduler.schedule_and_execute(circuit, shots, 'ibm_brisbane')
 
 ```
-QCRAFT AutoschedulQ will utilize the default AWS and IBM Cloud credentials stored on the machine for cloud executions.
+Autoscheduler will utilize the default AWS and IBM Cloud credentials stored on the machine for cloud executions.
 
 ## Optimizing Quantum Tasks
 This library aims for the shot optimization on quantum tasks. Reducing the cost of the circuit on the end-user.
