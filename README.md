@@ -1,6 +1,6 @@
 # Autoscheduler
 [![PyPI Version](https://img.shields.io/pypi/v/autoscheduler.svg)](https://pypi.org/project/autoscheduler/)
-![Python Versions](https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11%20|%203.12-blue.svg)
+![Python Versions](https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11%20|%203.12%20|%203.13-blue.svg)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/jorgecs/Autoscheduler/blob/main/LICENSE)
 ## Description
 
