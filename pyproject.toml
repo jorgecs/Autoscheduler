@@ -35,8 +35,8 @@ requires-python = ">=3.9"
 dev = ["pytest", "sphinx"]
 
 [project.urls]
-Homepage = "https://github.com/Qcraft-UEx/QCRAFT-AutoScheduler"
-Changelog = "https://github.com/Qcraft-UEx/QCRAFT-AutoScheduler/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/jorgecs/Autoscheduler"
+Changelog = "https://github.com/jorgecs/Autoscheduler/blob/main/CHANGELOG.md"
 
 [tool.setuptools.dynamic]
 version = {attr = "autoscheduler._version.__version__"}

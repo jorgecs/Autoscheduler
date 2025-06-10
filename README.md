@@ -8,7 +8,7 @@ Autoscheduler: a library that allows users to automatically schedule the executi
 
 ## Installation
 
-You can install AutoScheduler and all its dependencies using pip:
+You can install Autoscheduler and all its dependencies using pip:
 
 ```bash
 pip install autoscheduler
@@ -17,7 +17,7 @@ pip install autoscheduler
 You can also install from source by cloning the repository and installing from source:
 
 ```bash
-git clone https://github.com/jorgecs/AutoScheduler.git
+git clone https://github.com/jorgecs/Autoscheduler.git
 cd autoscheduler
 pip install .
 ```

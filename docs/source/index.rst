@@ -3,10 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-QCRAFT AutoScheduler |release| documentation
+Autoscheduler |release| documentation
 ===========================================
 
-QCRAFT-AutoScheduler is part of the Quantum Circuit Research And Framework Toolbox (QCRAFT) project, developed by SPILab at the University of Extremadura.
 With this library we aim to provide a tool that allows users to improve the efficiency of their quantum tasks.
 
 .. toctree::

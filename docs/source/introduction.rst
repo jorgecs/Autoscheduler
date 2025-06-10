@@ -1,20 +1,20 @@
 .. _introduction:
 
 =====================
-QCRAFT AutoScheduler
+Autoscheduler
 =====================
 
-QCRAFT AutoScheduler is a library that allows users to automatically schedule the execution of their own quantum circuits, improving efficiency and reducing execution times in quantum computing environments.
+Autoscheduler is a library that allows users to automatically schedule the execution of their own quantum circuits, improving efficiency and reducing execution times in quantum computing environments.
 
 Purpose
 =======
 
-QCRAFT AutoScheduler aims to solve the problem of the increasing cost of quantum tasks by providing a way to decrease the shots needed to obtain the desired results.
+Autoscheduler aims to solve the problem of the increasing cost of quantum tasks by providing a way to decrease the shots needed to obtain the desired results.
 
 Features
 ========
 
-- **Cost reduction**: QCRAFT AutoScheduler reduces the cost of quantum tasks by reducing the shots of quantum circuits.
+- **Cost reduction**: Autoscheduler reduces the cost of quantum tasks by reducing the shots of quantum circuits.
 
 Optimizing Quantum Tasks
 ========================
@@ -31,5 +31,5 @@ Consider a circuit with 2 qubits, requiring 100 shots. If the maximum number of 
 Getting Started
 ===============
 
-To get started with QCRAFT AutoScheduler, please proceed to the :ref:`installation` section. The installation guide will help you install the library and its dependencies.
-After installing the library, you can proceed to the :ref:`usage` section to learn how to use QCRAFT AutoScheduler in your projects.
+To get started with Autoscheduler, please proceed to the :ref:`installation` section. The installation guide will help you install the library and its dependencies.
+After installing the library, you can proceed to the :ref:`usage` section to learn how to use Autoscheduler in your projects.
