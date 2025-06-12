@@ -4,13 +4,6 @@ from autoscheduler import _translator
 class TestTranslator(unittest.TestCase):
 
     def setUp(self):
-        #self.common_values = { # testing different encodings with all available gates
-        #    'quirk': 'https://algassert.com/quirk#circuit={"cols":[["H"],["X"],["Z"],["•","X"],["•","Z"],["Swap","Swap"],["Measure", "Measure"]]}',
-        #    'quirk_exported': 'https://algassert.com/quirk#circuit=%7B%22cols%22%3A%5B%5B%22H%22%5D%2C%5B%22X%22%5D%2C%5B%22Z%22%5D%2C%5B%22%E2%80%A2%22%2C%22X%22%5D%2C%5B%22%E2%80%A2%22%2C%22Z%22%5D%2C%5B%22Swap%22%2C%22Swap%22%5D%2C%5B%22Measure%22%2C%22Measure%22%5D%5D%7D',
-        #    'quirk_copied': 'https://algassert.com/quirk#circuit={%22cols%22:[[%22H%22],[%22X%22],[%22Z%22],[%22%E2%80%A2%22,%22X%22],[%22%E2%80%A2%22,%22Z%22],[%22Swap%22,%22Swap%22],[%22Measure%22,%20%22Measure%22]]}',
-        #    'ibm_circuit': """circuit.h(qreg_q[3])\ncircuit.x(qreg_q[3])\ncircuit.z(qreg_q[3])\nmc_x_gate = MCMT(XGate(), 1, 1)\ncircuit.append(mc_x_gate, [qreg_q[3], qreg_q[4]])\nmc_z_gate = MCMT(ZGate(), 1, 1)\ncircuit.append(mc_z_gate, [qreg_q[3], qreg_q[4]])\ncircuit.swap(qreg_q[3], qreg_q[4])\ncircuit.measure(qreg_q[3], creg_c[3])\ncircuit.measure(qreg_q[4], creg_c[4])""",
-        #    'aws_circuit': """circuit.h(3)\ncircuit.x(3)\ncircuit.z(3)\ncircuit.cnot(3, 4)\ncircuit.cz(3, 4)\ncircuit.swap(3, 4)"""
-        #}
         self.common_values = { # testing different encodings with all available gates
             'quirk': 'https://algassert.com/quirk#circuit={"cols":[["H","Y","Z^¼","X^½"],["X"],["Z",1,"Y^½","X^-½"],["•","X"],["•","Z"],["Swap","Swap"],[1,1,1,"X^¼"],["Z^½","Z^-½"],["Y","•","•"],["Z","•","•","•"],[1,1,1,"X^-¼"],["Y^¼","Y^-¼","Z^-¼","Y^-½"],["Measure","Measure","Measure","Measure"]]}',
             'quirk_exported': 'https://algassert.com/quirk#circuit=%7B%22cols%22%3A%5B%5B%22H%22%2C%22Y%22%2C%22Z%5E%C2%BC%22%2C%22X%5E%C2%BD%22%5D%2C%5B%22X%22%5D%2C%5B%22Z%22%2C1%2C%22Y%5E%C2%BD%22%2C%22X%5E-%C2%BD%22%5D%2C%5B%22%E2%80%A2%22%2C%22X%22%5D%2C%5B%22%E2%80%A2%22%2C%22Z%22%5D%2C%5B%22Swap%22%2C%22Swap%22%5D%2C%5B1%2C1%2C1%2C%22X%5E%C2%BC%22%5D%2C%5B%22Z%5E%C2%BD%22%2C%22Z%5E-%C2%BD%22%5D%2C%5B%22Y%22%2C%22%E2%80%A2%22%2C%22%E2%80%A2%22%5D%2C%5B%22Z%22%2C%22%E2%80%A2%22%2C%22%E2%80%A2%22%2C%22%E2%80%A2%22%5D%2C%5B1%2C1%2C1%2C%22X%5E-%C2%BC%22%5D%2C%5B%22Y%5E%C2%BC%22%2C%22Y%5E-%C2%BC%22%2C%22Z%5E-%C2%BC%22%2C%22Y%5E-%C2%BD%22%5D%2C%5B%22Measure%22%2C%22Measure%22%2C%22Measure%22%2C%22Measure%22%5D%5D%7D',

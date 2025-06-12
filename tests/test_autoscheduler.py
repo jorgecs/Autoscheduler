@@ -262,6 +262,10 @@ class TestAutoScheduler(unittest.TestCase):
             job_result = job.result()
             print(job_result.get_counts(qc_basis))
             """,
+            "empty_circuit":
+            """
+            from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+            circuit = QuantumCircuit()"""
         }
         self.scheduler = Autoscheduler()
 
@@ -404,6 +408,7 @@ class TestAutoScheduler(unittest.TestCase):
         # Check if built_circuit is equal to circuit (at gate level)
         self.assertEqual(built_circuit, circuit)
 
+
     def test_schedule_quirk_ibm(self):
         quirk_url = "https://algassert.com/quirk#circuit={'cols':[['H'],['•','X'],['Measure','Measure']]}"
         shots = 5000
@@ -533,10 +538,6 @@ class TestAutoScheduler(unittest.TestCase):
             circuit.measure(qreg_q[3+6*i], creg_c[3+6*i])
             circuit.measure(qreg_q[4+6*i], creg_c[4+6*i])
             circuit.measure(qreg_q[5+6*i], creg_c[5+6*i])
-
-        print(dumps(scheduled_circuit))
-        print('--------------')
-        print(dumps(circuit))
 
         self.assertEqual(dumps(scheduled_circuit), dumps(circuit))
         self.assertEqual(shots, 1250)
@@ -777,11 +778,15 @@ class TestAutoScheduler(unittest.TestCase):
         circuit = ""
         with pytest.raises(TypeError, match="Invalid circuit format. Expected a circuit object, a Quirk URL, or a GitHub URL."):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(TypeError, match="Invalid circuit format. Expected a circuit object, a Quirk URL, or a GitHub URL."):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], provider='ibm', machine='local')
 
     def test_schedule_none_circuit(self):
         circuit = None
         with pytest.raises(TypeError, match="Circuit cannot be None."):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(TypeError, match="Circuit cannot be None."):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
 
     def test_schedule_invalid_quirk_url(self):
         circuit = "https://algassert.com/quirk#circuit={}"
@@ -793,21 +798,30 @@ class TestAutoScheduler(unittest.TestCase):
         circuit = "https://raw.githubusercontent.com/"
         with pytest.raises(ValueError, match="Invalid GitHub URL. Expected a URL in the format 'https://raw.githubusercontent.com/user/repo/branch/file'."):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match="Invalid GitHub URL. Expected a URL in the format 'https://raw.githubusercontent.com/user/repo/branch/file'."):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')            
 
     def test_schedule_github_url_without_raw(self):
         circuit = "https://github.com/example/repo/"
         with pytest.raises(ValueError, match="URL must come from a raw GitHub file"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match="URL must come from a raw GitHub file"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
 
     def test_schedule_github_element_without_raw(self):
         circuit = "https://github.com/example/repo/blob/branch/file.py"
         with pytest.raises(ValueError, match="URL must come from a raw GitHub file"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match="URL must come from a raw GitHub file"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
+
 
     def test_schedule_github_file_without_raw(self):
         circuit = "https://github.com/example/repo/branch/file.py"
         with pytest.raises(ValueError, match="URL must come from a raw GitHub file"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match="URL must come from a raw GitHub file"):
+            rseults = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
 
     @patch('autoscheduler.Autoscheduler._fetch_circuit')
     def test_schedule_raw_github_url_without_circuit(self, mock_fetch_circuit):
@@ -827,35 +841,47 @@ class TestAutoScheduler(unittest.TestCase):
         circuit = "https://raw.githubusercontent.com/user/repo/branch/file.yaml"
         with pytest.raises(ValueError, match='The GitHub URL must be a Braket or Qiskit quantum circuit'):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match='The GitHub URL must be a Braket or Qiskit quantum circuit'):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
 
     def test_schedule_no_qubits_braket_circuit(self):
         circuit = braket.circuits.Circuit()
         with pytest.raises(ValueError, match='The circuit must have at least one qubit and one gate'):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match='The circuit must have at least one qubit and one gate'):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')            
 
     def test_schedule_no_qubits_qiskit_circuit(self):
         circuit = qiskit.QuantumCircuit()
         with pytest.raises(ValueError, match='The circuit must have at least one qubit and one gate'):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match='The circuit must have at least one qubit and one gate'):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')            
 
     def test_schedule_no_classical_register_qiskit_circuit(self):
         qreg = qiskit.QuantumRegister(2)
         circuit = qiskit.QuantumCircuit(qreg)
         with pytest.raises(ValueError, match='The qiskit circuit must contain a quantum and classical register'):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match='The qiskit circuit must contain a quantum and classical register'):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
 
     def test_schedule_no_quantum_register_qiskit_circuit(self):
         creg = qiskit.ClassicalRegister(2)
         circuit = qiskit.QuantumCircuit(creg)
         with pytest.raises(ValueError, match="The circuit must have at least one qubit and one gate"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
-        
+        with pytest.raises(ValueError, match="The circuit must have at least one qubit and one gate"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
+
     def test_schedule_qiskit_circuit_without_gates(self):
         qreg = qiskit.QuantumRegister(2)
         creg = qiskit.ClassicalRegister(2)
         circuit = qiskit.QuantumCircuit(qreg,creg)
         with pytest.raises(ValueError, match="The circuit must have at least one qubit and one gate"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match="The circuit must have at least one qubit and one gate"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
 
     def test_schedule_inferior_qubit_number_qiskit(self):
         qreg = qiskit.QuantumRegister(2)
@@ -866,6 +892,8 @@ class TestAutoScheduler(unittest.TestCase):
         max_qubits=1
         with pytest.raises(ValueError, match="Circuit too large"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=max_qubits)
+        with pytest.raises(ValueError, match="Circuit too large"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=max_qubits, machine='local')
 
     def test_schedule_inferior_qubit_number_braket(self):
         circuit = braket.circuits.Circuit()
@@ -874,6 +902,8 @@ class TestAutoScheduler(unittest.TestCase):
         max_qubits=1
         with pytest.raises(ValueError, match="Circuit too large"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=max_qubits)
+        with pytest.raises(ValueError, match="Circuit too large"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=max_qubits, machine='local')
 
     def test_schedule_inferior_qubit_number_quirk(self):
         circuit = "https://algassert.com/quirk#circuit={'cols':[['H'],['•','X'],['Measure','Measure']]}"
@@ -881,6 +911,8 @@ class TestAutoScheduler(unittest.TestCase):
         provider = 'ibm'
         with pytest.raises(ValueError, match="Circuit too large"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=max_qubits, provider=provider)
+        with pytest.raises(ValueError, match="Circuit too large"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=max_qubits, provider=provider, machine='local')
 
     @patch('autoscheduler.Autoscheduler._fetch_circuit')
     def test_schedule_inferior_qubit_number_github_braket(self, mock_fetch_circuit):
@@ -892,6 +924,8 @@ class TestAutoScheduler(unittest.TestCase):
         max_qubits=1
         with pytest.raises(ValueError, match="Circuit too large"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=max_qubits)
+        with pytest.raises(ValueError, match="Circuit too large"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=max_qubits, machine='local')
 
     @patch('autoscheduler.Autoscheduler._fetch_circuit')
     def test_schedule_inferior_qubit_number_github_qiskit(self, mock_fetch_circuit):
@@ -903,27 +937,38 @@ class TestAutoScheduler(unittest.TestCase):
         max_qubits=1
         with pytest.raises(ValueError, match="Circuit too large"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=max_qubits)
+        with pytest.raises(ValueError, match="Circuit too large"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=max_qubits, machine='local')
 
     def test_schedule_quirk_without_provider(self):
         circuit = "https://algassert.com/quirk#circuit={'cols':[['H'],['•','X'],['Measure','Measure']]}"
         with pytest.raises(ValueError, match="Provider not specified"):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(ValueError, match="Provider not specified"):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
 
     def test_schedule_number(self):
         circuit = 2
         with pytest.raises(TypeError, match="Circuit cannot be a number."):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(TypeError, match="Circuit cannot be a number."):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
 
     def test_schedule_iterable_object(self):
         circuit = {}
         with pytest.raises(TypeError, match="Invalid circuit format. Expected a circuit object, a Quirk URL, or a GitHub URL."):
             scheduled_circuit, shots, times = self.scheduler.schedule(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"])
+        with pytest.raises(TypeError, match="Invalid circuit format. Expected a circuit object, a Quirk URL, or a GitHub URL."):
+            results = self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], max_qubits=self.common_values["max_qubits"], machine='local')
+ 
 
     def test_execute_aws_no_bucket(self):
         circuit = braket.circuits.Circuit()
         circuit.h(0)
         with pytest.raises(ValueError, match="S3 Bucket not specified"):
             self.scheduler.execute(circuit, self.common_values["shots"], 'notlocal', 1)
+        with pytest.raises(ValueError, match="Machine notlocal not available"):
+            self.scheduler.schedule_and_execute(circuit, self.common_values["shots"], 'notlocal')
 
     def test_no_machine_no_max_qubits(self):
         circuit = braket.circuits.Circuit()
@@ -1006,6 +1051,114 @@ class TestAutoScheduler(unittest.TestCase):
         
         self.assertEqual(newcounts, {'0': 5000, '1': 5000})
         self.assertEqual(newcounts2, {'00': 800, '11': 800, '01':2000, '10':300})
+
+    def test_get_qubits_not_circuit(self):
+        circuit = 'circuit = QuantumCircuit()'
+        with pytest.raises(TypeError, match='Invalid circuit type. Expected a Qiskit or Braket circuit.'):
+            scheduled_circuit, shots, times = self.scheduler._get_qubits_circuit_object(circuit)
+
+    def test_analyze_circuit_no_gates(self):
+        circuit = self.common_values["empty_circuit"]
+        with pytest.raises(ValueError, match='The circuit must have at least one qubit and one gate'):
+            self.scheduler._analyze_circuit(False, False, circuit)
+
+    def test_compose_aws_no_gates(self):
+        circuit = braket.circuits.Circuit()
+        with pytest.raises(ValueError, match='The circuit must have at least one qubit and one gate'):
+            self.scheduler._compose_circuit(self.common_values['max_qubits'], 5, circuit, self.common_values['shots'], 'aws')
+
+    def test_get_gate_operation(self):
+        qreg = qiskit.QuantumRegister(2, 'qreg_q')
+        creg = qiskit.ClassicalRegister(2, 'creg_c')
+        circuit = qiskit.QuantumCircuit(qreg,creg)
+        gate_meas = 'circuit.measure(qreg[0], creg[0])'
+        gate_barrier = 'circuit.barrier(qreg)'
+        gate_cx = 'circuit.cx(qreg[0], qreg[1])'
+        gate_h = 'circuit.h(qreg[0])'
+        gate_x = 'circuit.x(qreg[0])'
+        gate_y = 'circuit.y(qreg[0])'
+        gate_z = 'circuit.z(qreg[0])'
+        gate_s = 'circuit.s(qreg[0])'
+        gate_t = 'circuit.t(qreg[0])'
+        gate_non_existent = 'non_existent_gate'
+        gate_non_existent2 = 'circuit.non_existent(qreg[0])'
+
+        result_meas = self.scheduler._get_gate_operation(gate_meas, circuit, qreg, creg)
+        result_barrier = self.scheduler._get_gate_operation(gate_barrier, circuit, qreg, creg)
+        result_cx = self.scheduler._get_gate_operation(gate_cx, circuit, qreg, creg)
+        result_h = self.scheduler._get_gate_operation(gate_h, circuit, qreg, creg)
+        result_x = self.scheduler._get_gate_operation(gate_x, circuit, qreg, creg)
+        result_y = self.scheduler._get_gate_operation(gate_y, circuit, qreg, creg)
+        result_z = self.scheduler._get_gate_operation(gate_z, circuit, qreg, creg)
+        result_s = self.scheduler._get_gate_operation(gate_s, circuit, qreg, creg)
+        result_t = self.scheduler._get_gate_operation(gate_t, circuit, qreg, creg)
+        result_non_existent = self.scheduler._get_gate_operation(gate_non_existent, circuit, qreg, creg)
+
+        with self.assertRaises(AttributeError):
+            result_non_existent2 = self.scheduler._get_gate_operation(gate_non_existent2, circuit, qreg, creg)
+
+        self.assertIsInstance(result_meas, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_meas[0].operation.name, 'measure')
+
+        self.assertIsInstance(result_barrier, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_barrier[0].operation.name, 'barrier')
+
+        self.assertIsInstance(result_cx, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_cx[0].operation.name, 'cx')
+
+        self.assertIsInstance(result_h, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_h[0].operation.name, 'h')
+
+        self.assertIsInstance(result_x, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_x[0].operation.name, 'x')
+
+        self.assertIsInstance(result_y, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_y[0].operation.name, 'y')
+
+        self.assertIsInstance(result_z, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_z[0].operation.name, 'z')
+
+        self.assertIsInstance(result_s, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_s[0].operation.name, 's')
+
+        self.assertIsInstance(result_t, qiskit.circuit.instructionset.InstructionSet)
+        self.assertEqual(result_t[0].operation.name, 't')
+
+        self.assertIsNone(result_non_existent)
+        
+    def test_qiskit_version(self):
+        version = self.scheduler._get_qiskit_version()
+        self.assertIsInstance(version, int)
+        self.assertGreaterEqual(version, 0)
+
+        with patch('importlib.metadata.version') as mock_version:
+            mock_version.return_value = "1.2.3"
+            result = self.scheduler._get_qiskit_version()
+            self.assertEqual(result, 1)
+
+            mock_version.return_value = "2.0.1"
+            result = self.scheduler._get_qiskit_version()
+            self.assertEqual(result, 2)
+
+            mock_version.return_value = "0.45.2"
+            result = self.scheduler._get_qiskit_version()
+            self.assertEqual(result, 0)
+
+            mock_version.return_value = "3.1.0rc1"
+            result = self.scheduler._get_qiskit_version()
+            self.assertEqual(result, 3)
+
+            mock_version.return_value = "2.5.0.dev0+abc123" #Dev version
+            result = self.scheduler._get_qiskit_version()
+            self.assertEqual(result, 2)
+
+            mock_version.return_value = "v2.1.0" #Starting with string
+            result = self.scheduler._get_qiskit_version()
+            self.assertEqual(result, 1)
+
+            mock_version.return_value = "5" #Failed regex
+            result = self.scheduler._get_qiskit_version()
+            self.assertEqual(result, 1)
 
 if __name__ == '__main__':
     unittest.main()
